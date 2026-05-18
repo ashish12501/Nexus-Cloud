@@ -1,9 +1,12 @@
 import { response } from "express";
-import userModal from "../modals/user.modal.js";
+import userModal from "../models/user.model.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import config from "../config/config.js";
-import sessionModal from "../modals/session.modal.js";
+import sessionModal from "../models/session.model.js";
+import sendEmail from "../services/email.service.js";
+import { generateOTP, getOtpHtml } from "../utils/utils.js";
+import otpModal from "../models/otp.model.js";
 
 export async function register(req, res) {
   const { username, email, password } = req.body;
@@ -29,52 +32,25 @@ export async function register(req, res) {
     password: hashedPassword,
   });
 
-  const refreshToken = jwt.sign(
-    {
-      id: user._id,
-    },
-    config.JWT_SECRET,
-    {
-      expiresIn: "7d",
-    },
-  );
+  const otp = generateOTP();
 
-  const refreshTokenHash = crypto
-    .createHash("sha256")
-    .update(refreshToken)
-    .digest("hex");
+  const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+  const html = getOtpHtml(otp);
 
-  const session = await sessionModal.create({
-    userId: user._id,
-    refreshTokenHash,
-    ip: req.ip,
-    userAgent: req.headers["user-agent"],
+  await otpModal.create({
+    email,
+    user: user._id,
+    otpHash,
   });
-
-  const accessToken = jwt.sign(
-    {
-      id: user._id,
-      sessionId: session._id,
-    },
-    config.JWT_SECRET,
-    {
-      expiresIn: "15m",
-    },
-  );
-
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 100, //7 days
-  });
+  await sendEmail(email, "OTP Verification", `Your OTP code is ${otp}`, html);
   res.status(201).json({
     message: "User Registered Successfully!",
     user: {
       username: user.username,
       email: user.email,
       id: user.id,
-      token: accessToken,
+      verified: user.verified,
+      // token: accessToken,
     },
   });
 }
@@ -86,6 +62,12 @@ export async function login(req, res) {
 
   if (!user) {
     return res.status(401).json({ message: "invalid email password" });
+  }
+
+  if (!user.verified) {
+    return res
+      .status(401)
+      .json({ message: "Please verify your email before logging in" });
   }
 
   const passwordHash = crypto
@@ -275,5 +257,33 @@ export async function logoutAll(req, res) {
   res.clearCookie("refreshToken");
   res.status(201).json({
     message: "Logged from all devices successfully",
+  });
+}
+
+export async function verifyOtp(req, res) {
+  const { email, otp } = req.body;
+
+  const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+  const otpRecord = await otpModal.findOne({ email, otpHash });
+
+  if (!otpRecord) {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
+
+  const user = await userModal.findByIdAndUpdate(otpRecord.user, {
+    verified: true,
+  });
+
+  await otpModal.deleteMany({ user: user._id });
+
+  res.status(200).json({
+    message: "Email verified successfully",
+    user: {
+      username: user.username,
+      email: user.email,
+      id: user.id,
+      verified: user.verified,
+    },
   });
 }
