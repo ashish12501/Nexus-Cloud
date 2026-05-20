@@ -12,6 +12,8 @@ if (!process.env.GOOGLE_REFRESH_TOKEN)
   throw new Error("GOOGLE_REFRESH_TOKEN is not defined in .env");
 if (!process.env.GOOGLE_USER)
   throw new Error("GOOGLE_USER is not defined in .env");
+if (!process.env.GOOGLE_APP_PASSWORD)
+  throw new Error("GOOGLE_APP_PASSWORD is not defined");
 const config = {
   MONGO_URI: process.env.MONGO_URI,
   JWT_SECRET: process.env.JWT_SECRET,
@@ -19,6 +21,7 @@ const config = {
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
   GOOGLE_USER: process.env.GOOGLE_USER,
+  GOOGLE_APP_PASSWORD: process.env.GOOGLE_APP_PASSWORD,
 };
 
 export default config;
