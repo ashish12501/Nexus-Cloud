@@ -19,9 +19,9 @@ filesRouter.post(
   filesController.uploadFiles,
 );
 filesRouter.get("/stream/:fileId", requireAuth, filesController.streamFile);
-filesRouter.delete(
-  "/delete/:id",
-  requireAuth,
-  filesController.deleteFileFolder,
-);
+// filesRouter.delete(
+//   "/delete/:id",
+//   requireAuth,
+//   filesController.delete,
+// );
 export default filesRouter;
