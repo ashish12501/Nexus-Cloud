@@ -58,3 +58,6 @@ backend/coverage/
 # Firebase Configuration Cache (If using Firebase CLI locally)
 # ====================================================================
 .firebase/
+
+#google drive configuration file
+credentials.json

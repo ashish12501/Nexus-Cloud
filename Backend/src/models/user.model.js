@@ -19,6 +19,14 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  totalSpace: {
+    type: Number,
+    default: 52428800, // 50MB in bytes
+  },
+  usedSpace: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const userModal = mongoose.model("user", userSchema);

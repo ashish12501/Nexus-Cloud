@@ -50,6 +50,8 @@ export async function register(req, res) {
       email: user.email,
       id: user.id,
       verified: user.verified,
+      totalSpace: user.totalSpace,
+      usedSpace: user.usedSpace,
       // token: accessToken,
     },
   });
