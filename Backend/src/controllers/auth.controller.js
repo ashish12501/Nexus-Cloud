@@ -76,9 +76,7 @@ export async function login(req, res) {
     .createHash("sha256")
     .update(password)
     .digest("hex");
-  console.log("user", user);
-  console.log("1", passwordHash);
-  console.log("2", user.password);
+
   const passwordMatched = passwordHash == user.password;
   if (!passwordMatched)
     return res.status(401).json({
@@ -112,11 +110,13 @@ export async function login(req, res) {
     },
   );
 
+  const isProd = process.env.NODE_ENV === "production";
+
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 100,
+    secure: isProd,
+    sameSite: isProd ? "strict" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
   res.status(200).json({
     message: "Logged in successfully",
@@ -198,11 +198,13 @@ export async function refreshToken(req, res) {
   session.refreshTokenHash = newRefreshTokenHash;
   await session.save();
 
+  const isProd = process.env.NODE_ENV === "production";
+
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 100,
+    secure: isProd,
+    sameSite: isProd ? "strict" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
   res.status(200).json({
     message: "Token refreshed successfully",
