@@ -19,9 +19,10 @@ filesRouter.post(
   filesController.uploadFiles,
 );
 filesRouter.get("/stream/:fileId", requireAuth, filesController.streamFile);
-// filesRouter.delete(
-//   "/delete/:id",
-//   requireAuth,
-//   filesController.delete,
-// );
+filesRouter.post("/delete", requireAuth, filesController.deleteItems);
+filesRouter.patch("/rename", requireAuth, filesController.renameItem);
+filesRouter.post("/move", requireAuth, filesController.moveItems);
+filesRouter.post("/copy", requireAuth, filesController.copyItems);
+// filesRouter.get("/download/:fileId", requireAuth, filesController.downloadFile);
+
 export default filesRouter;

@@ -16,7 +16,7 @@ export const checkQuota = async (req, res, next) => {
     // 2. Fetch the user's current storage stats
     const user = await userModel.findById(req.user.id);
 
-    // 3. Check if the upload exceeds the 10MB limit
+    // 3. Check if the upload exceeds the 50MB limit
     if (user.usedSpace + totalIncomingSize > user.totalSpace) {
       return res.status(400).json({
         message: "Storage limit exceeded. Upgrade your plan or delete files.",
